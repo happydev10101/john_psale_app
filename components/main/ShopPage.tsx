@@ -50,13 +50,18 @@ const XLM_PER_ASSET = Number.isFinite(parsedAssetPrice) && parsedAssetPrice > 0
   : 0.5;
 
 interface ShopPageProps {
+  initialOrder?: SaleOrder | null;
   onBack: () => void;
   onNext: (order: SaleOrder) => void;
 }
 
-export default function ShopPage({ onBack, onNext }: ShopPageProps) {
-  const [assetCode, setAssetCode] = useState(SALE_ASSETS[0].code);
-  const [amount, setAmount] = useState('1');
+export default function ShopPage({ initialOrder, onBack, onNext }: ShopPageProps) {
+  const [assetCode, setAssetCode] = useState(
+    initialOrder?.asset.code ?? SALE_ASSETS[0].code,
+  );
+  const [amount, setAmount] = useState(
+    initialOrder?.assetAmount.toString() ?? '1',
+  );
   const [error, setError] = useState('');
 
   const selectedAsset = useMemo(

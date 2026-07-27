@@ -15,6 +15,7 @@ function ClickerPage() {
   if (currentView === 'shop') {
     return (
       <ShopPage
+        initialOrder={order}
         onBack={() => setCurrentView('welcome')}
         onNext={(nextOrder) => {
           setOrder(nextOrder);
