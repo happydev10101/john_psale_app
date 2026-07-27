@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-const chatId = process.env.TELEGRAM_MARKETER_ID;     // Store the chat ID in .env.local
 const finnhub_api_key = process.env.FINNHUB_API_KEY;
 
 type PriceCache = {
