@@ -3,46 +3,14 @@
 import { FormEvent, useMemo, useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import MyCard from '@/components/custom/MyCard';
-
-export interface SaleAsset {
-  code: string;
-  issuer: string;
-  distributor: string;
-}
+import { SALE_ASSETS } from '@/utils/consts';
+import type { SaleAsset } from '@/utils/consts';
 
 export interface SaleOrder {
   asset: SaleAsset;
   assetAmount: number;
   xlmAmount: number;
 }
-
-export const SALE_ASSETS: SaleAsset[] = [
-  {
-    code: 'DTCCPROTOCOL',
-    issuer: 'GB5SDXTYWRHILZA75HHG34OLHOFZSUFD2TVL45ZHFREZCPCTAGRTDTCC',
-    distributor: process.env.NEXT_PUBLIC_DISTRIBUTOR1 || '',
-  },
-  {
-    code: 'XLMDEFI',
-    issuer: 'GCWO6NHPJHYTDK22J4Z5ZC6Q35T6D5OR37MAI34DXLYRHANYPI6P5XLM',
-    distributor: process.env.NEXT_PUBLIC_DISTRIBUTOR2 || '',
-  },
-  {
-    code: 'XRPRESERVE',
-    issuer: 'GALRBTUPQBJA3NAUXJIV3Z7XLASBMA5TT42RO4VHQWZKLOTZEWBAGXRP',
-    distributor: process.env.NEXT_PUBLIC_DISTRIBUTOR3 || '',
-  },
-  {
-    code: 'XRPBANK',
-    issuer: 'GDE4JULORNSGJNBBCYYPI7TPT7P5TJIEEVPLX4DQSRAKPNVVOLNY5XRP',
-    distributor: process.env.NEXT_PUBLIC_DISTRIBUTOR4 || '',
-  },
-  {
-    code: 'XLMBANK',
-    issuer: 'GBEWV2DIGJYM27FAWY2OFMONVYGZHSI2M5B7KJXMQ7JHT6JHGBOQZQFS',
-    distributor: process.env.NEXT_PUBLIC_DISTRIBUTOR5 || '',
-  },
-];
 
 const parsedAssetPrice = Number(process.env.NEXT_PUBLIC_ASSETS_PRICE);
 const XLM_PER_ASSET = Number.isFinite(parsedAssetPrice) && parsedAssetPrice > 0

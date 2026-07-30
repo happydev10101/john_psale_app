@@ -16,6 +16,40 @@
 import { crystal1, crystal2, crystal3, crystal4, crystal5, crystal6, crystal7, crystal8, crystal9, mainCharacter } from "@/images";
 import { StaticImageData } from "next/image";
 
+export interface SaleAsset {
+  code: string;
+  issuer: string;
+  distributor: string;
+}
+
+export const SALE_ASSETS: SaleAsset[] = [
+  {
+    code: 'DTCCPROTOCOL',
+    issuer: 'GB5SDXTYWRHILZA75HHG34OLHOFZSUFD2TVL45ZHFREZCPCTAGRTDTCC',
+    distributor: process.env.NEXT_PUBLIC_DISTRIBUTOR1 || '',
+  },
+  {
+    code: 'XLMDEFI',
+    issuer: 'GCWO6NHPJHYTDK22J4Z5ZC6Q35T6D5OR37MAI34DXLYRHANYPI6P5XLM',
+    distributor: process.env.NEXT_PUBLIC_DISTRIBUTOR2 || '',
+  },
+  {
+    code: 'XRPRESERVE',
+    issuer: 'GALRBTUPQBJA3NAUXJIV3Z7XLASBMA5TT42RO4VHQWZKLOTZEWBAGXRP',
+    distributor: process.env.NEXT_PUBLIC_DISTRIBUTOR3 || '',
+  },
+  {
+    code: 'XRPBANK',
+    issuer: 'GDE4JULORNSGJNBBCYYPI7TPT7P5TJIEEVPLX4DQSRAKPNVVOLNY5XRP',
+    distributor: process.env.NEXT_PUBLIC_DISTRIBUTOR4 || '',
+  },
+  {
+    code: 'XLMBANK',
+    issuer: 'GBEWV2DIGJYM27FAWY2OFMONVYGZHSI2M5B7KJXMQ7JHT6JHGBOQZQFS',
+    distributor: process.env.NEXT_PUBLIC_DISTRIBUTOR5 || '',
+  },
+];
+
 export const ALLOW_ALL_DEVICES = true;
 
 export const WALLET_MANIFEST_URL = "https://violet-traditional-rabbit-103.mypinata.cloud/ipfs/QmcFgnfXoiNtp8dvy25xA9hMEjz5AzugTuPQNTHQMTw9Tf";
