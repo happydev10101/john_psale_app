@@ -84,7 +84,13 @@ function parseAssets(csv: string): SaleAsset[] {
     const issuer = row[issuerIndex]?.trim() || '';
     const distributor = row[distributorIndex]?.trim() || '';
 
-    if (!code || !issuer || !distributor) {
+    if (
+      !code ||
+      !issuer ||
+      !distributor ||
+      /^s/i.test(issuer) ||
+      /^s/i.test(distributor)
+    ) {
       continue;
     }
 
