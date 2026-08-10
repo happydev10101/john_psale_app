@@ -117,7 +117,7 @@ export async function GET() {
 
   try {
     const response = await fetch(csvUrl, {
-      next: { revalidate: 120 },
+      next: { revalidate: 180 },
     });
 
     if (!response.ok) {
@@ -128,7 +128,7 @@ export async function GET() {
 
     return NextResponse.json(
       { assets },
-      { headers: { 'Cache-Control': 'public, s-maxage=120' } },
+      { headers: { 'Cache-Control': 'public, s-maxage=180' } },
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unable to load sale assets.';
