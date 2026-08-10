@@ -1,10 +1,11 @@
 'use client';
 
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import MyCard from '@/components/custom/MyCard';
-import { SALE_ASSETS } from '@/utils/consts';
 import type { SaleAsset } from '@/utils/consts';
+
+export type { SaleAsset } from '@/utils/consts';
 
 export interface SaleOrder {
   asset: SaleAsset;
@@ -24,17 +25,61 @@ interface ShopPageProps {
 }
 
 export default function ShopPage({ initialOrder, onBack, onNext }: ShopPageProps) {
-  const [assetCode, setAssetCode] = useState(
-    initialOrder?.asset.code ?? SALE_ASSETS[0].code,
-  );
+  const [assets, setAssets] = useState<SaleAsset[]>([]);
+  const [assetCode, setAssetCode] = useState(initialOrder?.asset.code ?? '');
   const [amount, setAmount] = useState(
     initialOrder?.assetAmount.toString() ?? '1',
   );
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadAssets = useCallback(async () => {
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/sale-assets');
+      const payload: unknown = await response.json();
+
+      if (!response.ok || !payload || typeof payload !== 'object' || !Array.isArray((payload as { assets?: unknown }).assets)) {
+        throw new Error('Unable to load sale assets.');
+      }
+
+      const loadedAssets = (payload as { assets: unknown[] }).assets.filter(
+        (asset): asset is SaleAsset => (
+          typeof asset === 'object' &&
+          asset !== null &&
+          typeof (asset as SaleAsset).code === 'string' &&
+          typeof (asset as SaleAsset).issuer === 'string' &&
+          typeof (asset as SaleAsset).distributor === 'string'
+        ),
+      );
+
+      if (loadedAssets.length === 0) {
+        throw new Error('No sale assets are available.');
+      }
+
+      setAssets(loadedAssets);
+      setAssetCode((currentCode) => (
+        loadedAssets.some((asset) => asset.code === currentCode)
+          ? currentCode
+          : loadedAssets[0].code
+      ));
+    } catch (loadError) {
+      setAssets([]);
+      setError(loadError instanceof Error ? loadError.message : 'Unable to load sale assets.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadAssets();
+  }, [loadAssets]);
 
   const selectedAsset = useMemo(
-    () => SALE_ASSETS.find((asset) => asset.code === assetCode) ?? SALE_ASSETS[0],
-    [assetCode],
+    () => assets.find((asset) => asset.code === assetCode),
+    [assets, assetCode],
   );
 
   const numericAmount = Number(amount);
@@ -44,6 +89,11 @@ export default function ShopPage({ initialOrder, onBack, onNext }: ShopPageProps
 
   const continueToPayment = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (!selectedAsset) {
+      setError('Select an available asset before continuing.');
+      return;
+    }
 
     if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
       setError('Enter an amount greater than zero.');
@@ -57,6 +107,34 @@ export default function ShopPage({ initialOrder, onBack, onNext }: ShopPageProps
       xlmAmount,
     });
   };
+
+  if (isLoading) {
+    return (
+      <MainLayout title="Shop">
+        <MyCard>
+          <p className="text-center text-sm font-normal text-gray-300">Loading sale assets…</p>
+        </MyCard>
+      </MainLayout>
+    );
+  }
+
+  if (!selectedAsset) {
+    return (
+      <MainLayout title="Shop">
+        <MyCard>
+          <div className="space-y-4 text-center">
+            <p className="text-sm font-normal text-error">{error || 'No sale assets are available.'}</p>
+            <button type="button" onClick={() => void loadAssets()} className="btn btn-info w-full">
+              Try again
+            </button>
+            <button type="button" onClick={onBack} className="btn btn-outline w-full">
+              Back
+            </button>
+          </div>
+        </MyCard>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout title="Shop">
@@ -72,7 +150,7 @@ export default function ShopPage({ initialOrder, onBack, onNext }: ShopPageProps
               onChange={(event) => setAssetCode(event.target.value)}
               className="select select-bordered w-full bg-black/40 text-white"
             >
-              {SALE_ASSETS.map((asset) => (
+              {assets.map((asset) => (
                 <option key={asset.code} value={asset.code}>
                   {asset.code}
                 </option>
