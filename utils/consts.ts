@@ -20,6 +20,7 @@ export interface SaleAsset {
   code: string;
   issuer: string;
   distributor: string;
+  priceInXlm: number;
 }
 
 export const ALLOW_ALL_DEVICES = true;

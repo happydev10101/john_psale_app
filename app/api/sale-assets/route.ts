@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import type { SaleAsset } from '@/utils/consts';
 
 const REQUIRED_COLUMNS = ['code', 'issuer', 'distributor_address'] as const;
+const FALLBACK_ASSETS_PRICE = 0.5;
 
 function parseCsv(csv: string): string[][] {
   const rows: string[][] = [];
@@ -53,7 +54,7 @@ function parseCsv(csv: string): string[][] {
   return rows;
 }
 
-function parseAssets(csv: string): SaleAsset[] {
+function parseAssets(csv: string, defaultPriceInXlm: number): SaleAsset[] {
   const [header, ...dataRows] = parseCsv(csv);
 
   if (!header) {
@@ -75,6 +76,7 @@ function parseAssets(csv: string): SaleAsset[] {
   const codeIndex = columnIndexes.get('code')!;
   const issuerIndex = columnIndexes.get('issuer')!;
   const distributorIndex = columnIndexes.get('distributor_address')!;
+  const priceIndex = columnIndexes.get('price_in_xlm');
   const seenCodes = new Set<string>();
 
   const assets: SaleAsset[] = [];
@@ -83,6 +85,11 @@ function parseAssets(csv: string): SaleAsset[] {
     const code = row[codeIndex]?.trim().toUpperCase() || '';
     const issuer = row[issuerIndex]?.trim() || '';
     const distributor = row[distributorIndex]?.trim() || '';
+    const priceValue = priceIndex === undefined ? '' : row[priceIndex]?.trim() || '';
+    const parsedPriceInXlm = Number(priceValue);
+    const priceInXlm = Number.isFinite(parsedPriceInXlm) && parsedPriceInXlm > 0
+      ? parsedPriceInXlm
+      : defaultPriceInXlm;
 
     if (
       !code ||
@@ -99,7 +106,12 @@ function parseAssets(csv: string): SaleAsset[] {
     }
 
     seenCodes.add(code);
-    assets.push({ code, issuer, distributor });
+    assets.push({
+      code,
+      issuer,
+      distributor,
+      priceInXlm,
+    });
   }
 
   return assets;
@@ -107,6 +119,10 @@ function parseAssets(csv: string): SaleAsset[] {
 
 export async function GET() {
   const csvUrl = process.env.ASSETS_CSV_URL;
+  const configuredAssetsPrice = Number(process.env.ASSETS_PRICE);
+  const defaultPriceInXlm = Number.isFinite(configuredAssetsPrice) && configuredAssetsPrice > 0
+    ? configuredAssetsPrice
+    : FALLBACK_ASSETS_PRICE;
 
   if (!csvUrl) {
     return NextResponse.json(
@@ -124,7 +140,7 @@ export async function GET() {
       throw new Error(`Asset CSV request failed with status ${response.status}.`);
     }
 
-    const assets = parseAssets(await response.text());
+    const assets = parseAssets(await response.text(), defaultPriceInXlm);
 
     return NextResponse.json(
       { assets },

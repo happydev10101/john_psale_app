@@ -13,11 +13,6 @@ export interface SaleOrder {
   xlmAmount: number;
 }
 
-const parsedAssetPrice = Number(process.env.NEXT_PUBLIC_ASSETS_PRICE);
-const XLM_PER_ASSET = Number.isFinite(parsedAssetPrice) && parsedAssetPrice > 0
-  ? parsedAssetPrice
-  : 0.5;
-
 interface ShopPageProps {
   initialOrder?: SaleOrder | null;
   onBack: () => void;
@@ -51,7 +46,10 @@ export default function ShopPage({ initialOrder, onBack, onNext }: ShopPageProps
           asset !== null &&
           typeof (asset as SaleAsset).code === 'string' &&
           typeof (asset as SaleAsset).issuer === 'string' &&
-          typeof (asset as SaleAsset).distributor === 'string'
+          typeof (asset as SaleAsset).distributor === 'string' &&
+          typeof (asset as SaleAsset).priceInXlm === 'number' &&
+          Number.isFinite((asset as SaleAsset).priceInXlm) &&
+          (asset as SaleAsset).priceInXlm > 0
         ),
       );
 
@@ -82,9 +80,10 @@ export default function ShopPage({ initialOrder, onBack, onNext }: ShopPageProps
     [assets, assetCode],
   );
 
+  const xlmPerAsset = selectedAsset?.priceInXlm ?? 0;
   const numericAmount = Number(amount);
   const xlmAmount = Number.isFinite(numericAmount) && numericAmount > 0
-    ? numericAmount * XLM_PER_ASSET
+    ? numericAmount * xlmPerAsset
     : 0;
 
   const continueToPayment = (event: FormEvent<HTMLFormElement>) => {
@@ -179,7 +178,7 @@ export default function ShopPage({ initialOrder, onBack, onNext }: ShopPageProps
               Private-sale rate
             </p>
             <p className="mt-1 text-sm">
-              1 {selectedAsset.code} = {XLM_PER_ASSET} XLM
+              1 {selectedAsset.code} = {xlmPerAsset} XLM
             </p>
             <div className="mt-4 flex items-end justify-between gap-4">
               <span className="text-sm font-normal text-gray-300">Total to pay</span>
